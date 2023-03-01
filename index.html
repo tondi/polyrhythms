@@ -1,0 +1,88 @@
+<html>
+
+<head>
+  <title>Polyrhythm Game</title>
+  <style>
+    * {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .container {
+      display: flex;
+      flex-flow: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+    .canvas {
+      margin: 0 auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <canvas id="bpm" class="canvas" height="900" width="1200"></canvas>
+    <h2 id="rhythm-one"></h2>
+    <h2 id="rhythm-two"></h2>
+  </div>
+  <script>
+    const rhythmOneText = document.querySelector("#rhythm-one");
+    const rhythmTwoText = document.querySelector("#rhythm-two");
+
+    let rhythmOneTempo = 0;
+    // let rhythmOnePreviousTempo = 0;
+    let rhythmOneLastKeyPress = new Date().getTime();
+    let rhythmTwoTempo = 0;
+    // let rhythmTwoPreviousTempo = 0;
+    let rythmTwoLastKeyPress = new Date().getTime();
+
+    const sounds = {
+      Enter: new Audio('https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/SD0025.mp3'),
+      ' ': new Audio('https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/RS.mp3'),
+    }
+    const bpm = document.querySelector('#bpm');
+    const ctx = bpm.getContext('2d');
+
+    const handleKeydown = (e) => {
+      const time = new Date().getTime()
+      if(!sounds[e.key]) return;
+      sounds[e.key].play();
+
+      const type = e.key === 'Enter' ? "right" : "left";
+      
+      if(e.key === ' ') {
+        rhythmOneTempo = 60000 / (time - rhythmOneLastKeyPress);
+        rhythmOneLastKeyPress = time;
+      } else {
+        rhythmTwoTempo = 60000 / (time - rythmTwoLastKeyPress);
+        rythmTwoLastKeyPress = time;
+      }
+
+      console.log(e.key === ' ' ? rhythmOneTempo : rhythmTwoTempo)
+
+      function drawBpm(tempo, color) {
+        ctx.beginPath();
+        // draw a dot
+        ctx.arc(600, 900 - tempo * 1.5, 8, 0, 4 * Math.PI);
+        ctx.fillStyle = color;
+        ctx.fill();
+      }
+
+      drawBpm(e.key === ' ' ? rhythmOneTempo : rhythmTwoTempo, e.key === ' ' ? "black" : "green")
+
+      // transpose
+      ctx.globalCompositeOperation = "copy";
+      ctx.drawImage(ctx.canvas,-15, 0);
+      // reset back to normal for subsequent operations.
+      ctx.globalCompositeOperation = "source-over"
+
+      rhythmOneText.innerHTML = Math.round(rhythmOneTempo);
+      rhythmTwoText.innerHTML = Math.round(rhythmTwoTempo);
+    }
+    // document.addEventListener('keydown', handleKeydown)
+
+    window.setInterval(() => handleKeydown({key: 'Enter'}), 300)
+  </script>
+</body>
+
+</html>
